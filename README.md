@@ -1,6 +1,6 @@
-# 🛡️ AI-Powered SOC Phishing Triage & SOAR Pipeline
+# 🛡️ AI-Powered SOC Phishing Triage Pipeline
 
-> An automated SOAR workflow built with **n8n** that enriches suspicious URLs using **VirusTotal** and **URLScan.io**, uses **Google Gemini** for AI-assisted threat analysis, and automatically dispatches structured incident reports.
+An automated SOAR workflow built with **n8n** that enriches suspicious URLs using **VirusTotal** and **URLScan.io**, uses **Google Gemini** for AI-assisted threat analysis, and automatically dispatches structured incident reports.
 
 ---
 
@@ -8,7 +8,7 @@
 
 Tier-1 SOC analysts can spend significant time manually validating suspicious links, checking threat intelligence platforms, analyzing web-page behavior, and documenting investigation results.
 
-I built this automated **Security Orchestration, Automation, and Response (SOAR)** pipeline using self-hosted **n8n** to streamline the initial phishing triage process.
+I built this automated pipeline using self-hosted **n8n** to streamline the initial phishing triage process.
 
 When a suspicious URL is submitted, the workflow:
 
