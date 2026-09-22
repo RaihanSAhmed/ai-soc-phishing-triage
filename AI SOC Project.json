@@ -1,0 +1,376 @@
+{
+  "name": "AI SOC Project",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "9bfef293-93ad-4fed-ad8a-9715da2c6629",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8385863d-d292-4c2a-ab2a-4f27739e8d0b",
+              "name": "PhishingLink",
+              "value": "https://notifyhubss.net/e236a5b10w19bb4b10e92543dc6q2d18eca6.html",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        224,
+        0
+      ],
+      "id": "1dd5e2c3-a313-4ccf-90a5-a1b2ac8d13e3",
+      "name": "Set Phishing Link"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Encode the phishing link for VirusTotal API\nconst url = $input.first().json.PhishingLink;\nconst vtUrlId = Buffer.from(url).toString('base64url');\nreturn [{ json: { PhishingLink: url, vtUrlId } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ],
+      "id": "67c67c13-f6d1-4581-9641-d7947f62bb95",
+      "name": "Encode URL for VirusTotal"
+    },
+    {
+      "parameters": {
+        "curlImport": "",
+        "httpVariantWarning": "",
+        "method": "GET",
+        "url": "=https://www.virustotal.com/api/v3/urls/{{ $json.vtUrlId }}",
+        "": "",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "virusTotalApi",
+        "provideSslCertificates": false,
+        "sendQuery": false,
+        "sendHeaders": false,
+        "sendBody": false,
+        "options": {},
+        "infoMessage": ""
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        672,
+        0
+      ],
+      "id": "e2d99aa5-30a8-43ab-88a0-2eae2a115e8c",
+      "name": "Validate HTTP Request",
+      "extendsCredential": "virusTotalApi",
+      "credentials": {
+        "virusTotalApi": {
+          "id": "9QYMwJP5Fj7KaXNt",
+          "name": "VirusTotal account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Set Phishing Link').item.json.PhishingLink }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.urlScanIo",
+      "typeVersion": 1,
+      "position": [
+        896,
+        0
+      ],
+      "id": "0e95ad40-fa1b-4724-863a-39732d6eec44",
+      "name": "Perform a scan",
+      "credentials": {
+        "urlScanIoApi": {
+          "id": "TqvhWypZ18yRDLuk",
+          "name": "urlscan.io account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 15
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1120,
+        0
+      ],
+      "id": "cbf9a2b3-1131-4d93-898a-aad570a752ee",
+      "name": "Wait",
+      "webhookId": "3ab7f89e-292c-43b5-8370-2884b3dfe3bb"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "scanId": "={{ $json.scanId }}"
+      },
+      "type": "n8n-nodes-base.urlScanIo",
+      "typeVersion": 1,
+      "position": [
+        1312,
+        -16
+      ],
+      "id": "d63fe21d-4f55-4aa1-8154-c6a5a0e465e1",
+      "name": "Get a scan",
+      "credentials": {
+        "urlScanIoApi": {
+          "id": "TqvhWypZ18yRDLuk",
+          "name": "urlscan.io account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3c7341e8-3072-4f9a-946d-6ebfd066e507",
+              "name": "PhishingLink",
+              "value": "={{ $('Set Phishing Link').item.json.PhishingLink }}",
+              "type": "string"
+            },
+            {
+              "id": "f1257c8f-9d06-470e-982c-3f3aea64d800",
+              "name": "VT_Results",
+              "value": "={{ JSON.stringify($('Validate HTTP Request').first().json.data) }}",
+              "type": "string"
+            },
+            {
+              "id": "93aa6de0-518b-4cd2-9da3-8e4e6bb10353",
+              "name": "URL Scan_Results",
+              "value": "={{ $json.data }}",
+              "type": "string"
+            },
+            {
+              "id": "ccb76ea2-cdfa-403f-9c1d-791345562867",
+              "name": "VT_ReportLink",
+              "value": "=https://www.virustotal.com/gui/url/{{ $('Validate HTTP Request').item.json.data.id }}",
+              "type": "string"
+            },
+            {
+              "id": "fb05d24c-0f15-4424-a71f-66ba05f74735",
+              "name": "URLScan_ReportLink",
+              "value": "=https://urlscan.io/result/{{ $('Perform a scan').item.json.scanId }}",
+              "type": "string"
+            },
+            {
+              "id": "dabb7870-0a9a-42cc-9bce-7aaaeb59173f",
+              "name": "URLScan_Screenshot",
+              "value": "=https://urlscan.io/screenshots/{{ $('Perform a scan').first().json.scanId }}.png",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1536,
+        -16
+      ],
+      "id": "471b4774-89f2-4c3f-bab4-90d8672279cd",
+      "name": "Prepare Report Data"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an AI SOC Analyst conducting an automated threat triage on a suspicious URL.\n\nAnalyze the provided threat intelligence results and generate a clear, structured incident report.\n\n--- TELEMETRY DATA ---\n- Target URL: {{ $json.PhishingLink }}\n- VirusTotal Summary: {{ $json.VT_Results }}\n- URLScan Details: {{ $json.URLScan_Results }}\n- VirusTotal Report Link: {{ $json.VT_ReportLink }}\n- URLScan Report Link: {{ $json.URLScan_ReportLink }}\n- URLScan Screenshot: {{ $json.URLScan_Screenshot }}\n\n--- OUTPUT REQUIREMENTS ---\n1. Threat Classification (e.g., Malicious / Phishing, Suspicious, or Benign)\n2. Executive Summary & Key Risk Indicators\n3. Recommended SOC Actions\n4. Evidence & Investigation Links",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1760,
+        -16
+      ],
+      "id": "1ec84e72-5acd-4e79-a466-2b0a81006b06",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1632,
+        192
+      ],
+      "id": "97d96329-9bc1-4594-a1e4-ac945f4dc0b2",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Och1soFkIWNWK7mC",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "raihanahmed.email@gmail.com",
+        "toEmail": "raihanahmed.email@gmail.com",
+        "subject": "AI SOC Email Triage Analysis",
+        "emailFormat": "text",
+        "text": "={{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        2128,
+        -16
+      ],
+      "id": "fac1c9dd-c981-430f-8c62-98cb90201fe7",
+      "name": "Send an Email",
+      "webhookId": "cd443d13-d390-4ef1-b3dc-3f1936d9f5ea",
+      "credentials": {
+        "smtp": {
+          "id": "fgRNbLHwONIR9Vy6",
+          "name": "SMTP account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Set Phishing Link",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Phishing Link": {
+      "main": [
+        [
+          {
+            "node": "Encode URL for VirusTotal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Encode URL for VirusTotal": {
+      "main": [
+        [
+          {
+            "node": "Validate HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Perform a scan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Perform a scan": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Get a scan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a scan": {
+      "main": [
+        [
+          {
+            "node": "Prepare Report Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Report Data": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send an Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "5599e436-fb22-4160-b77c-7ada2fb703e8",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "cd91847bd346dffff652c1685a497fb3dec9e86c4829f2879195a8e3350d8f63"
+  },
+  "nodeGroups": [],
+  "id": "P3ZgRTqIrBYhbI9g",
+  "tags": []
+}
